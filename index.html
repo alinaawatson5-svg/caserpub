@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CaseVault — симулятор открытия кейсов CS2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0c0e14;--panel:#141824;--panel2:#1a2030;--line:#262d42;--text:#e8ecf6;--mute:#8b94ad;
+  --accent:#ff6a2b;--accent2:#ffb02b;--green:#3ddc84;--red:#ff5470;
+  --mil:#4b69ff;--res:#8847ff;--cls:#d32ee6;--cov:#eb4b4b;--rare:#ffd700;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:radial-gradient(1200px 600px at 70% -10%,#1d2340 0%,transparent 60%),var(--bg);color:var(--text);font-family:Rubik,system-ui,sans-serif;min-height:100vh}
+button{font:inherit;cursor:pointer;border:0;color:inherit}
+header{position:sticky;top:0;z-index:20;background:rgba(12,14,20,.88);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.bar{max-width:1240px;margin:0 auto;padding:12px 18px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.logo{font-weight:700;font-size:22px;letter-spacing:.5px;display:flex;align-items:center;gap:8px;user-select:none;cursor:default}
+.logo i{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:inline-block;position:relative}
+.logo i:after{content:"";position:absolute;inset:7px;border:2px solid #0c0e14;border-radius:3px}
+.logo b{color:var(--accent)}
+nav{display:flex;gap:4px;flex:1;flex-wrap:wrap}
+nav button{background:transparent;color:var(--mute);padding:9px 14px;border-radius:9px;font-weight:500}
+nav button.on,nav button:hover{background:var(--panel2);color:var(--text)}
+.wallet{display:flex;align-items:center;gap:10px}
+.bal{background:var(--panel);border:1px solid var(--line);padding:8px 14px;border-radius:10px;font-weight:600;color:var(--green);font-variant-numeric:tabular-nums}
+.btn{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#1a0c00;font-weight:600;padding:10px 18px;border-radius:10px;transition:.15s}
+.btn:hover{filter:brightness(1.1);transform:translateY(-1px)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn.ghost{background:var(--panel2);color:var(--text);border:1px solid var(--line)}
+.btn.sm{padding:6px 12px;font-size:13px;border-radius:8px}
+.btn.green{background:linear-gradient(135deg,#22c55e,#3ddc84);color:#032}
+main{max-width:1240px;margin:0 auto;padding:22px 18px 80px}
+.hero{border:1px solid var(--line);border-radius:18px;padding:30px;background:linear-gradient(120deg,#1b1f35,#2a1a14 120%);margin-bottom:26px;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center}
+.hero h1{font-size:30px;line-height:1.2;margin-bottom:8px}
+.hero p{color:var(--mute);max-width:560px;line-height:1.5}
+.pill{display:inline-block;background:#ff6a2b22;color:var(--accent2);border:1px solid #ff6a2b55;padding:3px 10px;border-radius:99px;font-size:12px;margin-bottom:10px}
+.stats{display:flex;gap:12px;flex-wrap:wrap}
+.stat{background:#0c0e1488;border:1px solid var(--line);padding:12px 18px;border-radius:12px;min-width:120px}
+.stat small{color:var(--mute);display:block;font-size:12px}
+.stat b{font-size:20px}
+h2{font-size:20px;margin:6px 0 14px}
+.sec{margin-top:30px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;cursor:pointer;transition:.18s;position:relative;overflow:hidden}
+.card:hover{transform:translateY(-4px);border-color:var(--accent)}
+.card .tag{position:absolute;top:12px;left:12px;font-size:11px;padding:3px 8px;border-radius:99px;background:#0c0e14cc;border:1px solid var(--line);color:var(--accent2)}
+.crate{height:140px;display:flex;align-items:center;justify-content:center}
+.crate svg{filter:drop-shadow(0 8px 18px var(--glow,#ff6a2b66));transition:.2s}
+.card:hover .crate svg{transform:scale(1.07) rotate(-2deg)}
+.card h3{font-size:17px;margin:4px 0}
+.card .meta{color:var(--mute);font-size:13px;display:flex;justify-content:space-between}
+.card .price{margin-top:10px;font-weight:700;color:var(--accent2);font-size:18px;display:flex;justify-content:space-between;align-items:baseline}
+.card .price small{font-weight:400;font-size:12px;color:var(--mute)}
+.back{background:none;color:var(--mute);margin-bottom:12px;padding:6px 0}
+.back:hover{color:var(--text)}
+.cv-head{display:flex;gap:26px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+.cv-head .crate{width:200px;height:170px}
+.cv-head h1{font-size:28px}
+.cv-head p{color:var(--mute);margin:6px 0 14px;max-width:560px;line-height:1.5}
+.opens{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.chk{display:flex;align-items:center;gap:6px;color:var(--mute);font-size:14px}
+.roulette{position:relative;height:200px;border:1px solid var(--line);border-radius:16px;background:var(--panel);overflow:hidden;margin:6px 0 18px}
+.roulette:before,.roulette:after{content:"";position:absolute;top:0;bottom:0;width:90px;z-index:2;pointer-events:none}
+.roulette:before{left:0;background:linear-gradient(90deg,var(--panel),transparent)}
+.roulette:after{right:0;background:linear-gradient(-90deg,var(--panel),transparent)}
+.needle{position:absolute;left:50%;top:0;bottom:0;width:3px;background:var(--accent2);z-index:3;box-shadow:0 0 14px var(--accent2);transform:translateX(-50%)}
+.needle:before{content:"";position:absolute;top:0;left:-7px;border:8px solid transparent;border-top-color:var(--accent2)}
+.track{position:absolute;top:16px;left:0;display:flex;gap:8px;will-change:transform}
+.it{width:140px;height:166px;flex:none;border-radius:12px;background:var(--panel2);border:1px solid var(--line);border-bottom:4px solid var(--c);padding:9px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}
+.it:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 38%,var(--c),transparent 68%);opacity:.24}
+.it .w{font-size:11px;color:var(--mute);position:relative;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.it .s{font-weight:600;font-size:13px;line-height:1.2;position:relative}
+.it .p{font-size:13px;color:var(--accent2);position:relative;font-weight:600}
+.it .ico{position:relative;height:56px;display:flex;align-items:center;justify-content:center}
+.it .ico svg{width:104px;height:44px;filter:drop-shadow(0 3px 4px #000a)}
+.mil{--c:var(--mil)}.res{--c:var(--res)}.cls{--c:var(--cls)}.cov{--c:var(--cov)}.rare{--c:var(--rare)}
+.lbl{display:inline-block;width:10px;height:10px;border-radius:3px;background:var(--c);margin-right:6px}
+.odds{display:flex;gap:14px;flex-wrap:wrap;color:var(--mute);font-size:13px;margin:6px 0 16px}
+.items{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+.items .it{width:auto}
+.items .it.est .p:after{content:" ~";color:var(--mute)}
+.it.pick{outline:2px solid var(--green);outline-offset:-2px}
+.it.click{cursor:pointer;transition:.12s}.it.click:hover{transform:translateY(-3px)}
+.modal{position:fixed;inset:0;background:#000b;z-index:50;display:none;align-items:center;justify-content:center;padding:18px}
+.modal.on{display:flex}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px;max-width:760px;width:100%;max-height:88vh;overflow:auto}
+.box h3{margin-bottom:12px}
+.won{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:12px 0 16px}
+.won .it{width:auto}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.inv-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.inv .it .btn{position:relative;margin-top:4px}
+.empty{color:var(--mute);padding:40px;text-align:center;border:1px dashed var(--line);border-radius:14px}
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+input,select{background:var(--panel);border:1px solid var(--line);color:var(--text);padding:9px 12px;border-radius:9px;font:inherit}
+.tbl{width:100%;border-collapse:collapse;font-size:14px}
+.tbl th{color:var(--mute);font-weight:500;text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);position:sticky;top:58px;background:var(--bg)}
+.tbl td{padding:9px 10px;border-bottom:1px solid #1d2335}
+.tbl td.n{text-align:right;font-variant-numeric:tabular-nums}
+.tbl th.n{text-align:right}
+.tbl td .mini{display:inline-block;width:46px;height:20px;vertical-align:middle;margin-right:8px}
+.tbl td .mini svg{width:100%;height:100%}
+.note{color:var(--mute);font-size:13px;line-height:1.55;margin-top:18px}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--panel2);border:1px solid var(--line);padding:11px 18px;border-radius:12px;z-index:80;transition:.3s;opacity:0;max-width:92vw}
+.toast.on{transform:translateX(-50%);opacity:1}
+.about p{color:var(--mute);line-height:1.65;margin-bottom:12px;max-width:760px}
+.about h3{margin:18px 0 6px}
+/* апгрейдер */
+.up{display:grid;grid-template-columns:1fr 300px 1fr;gap:16px;align-items:start}
+.pn{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px}
+.pn h3{font-size:15px;margin-bottom:10px;display:flex;justify-content:space-between;gap:8px}
+.pn h3 span{color:var(--accent2);font-weight:600}
+.scroll{max-height:560px;overflow:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(125px,1fr));gap:8px;padding-right:4px}
+.scroll .it{width:auto;height:150px;padding:7px}
+.scroll .it .ico svg{width:84px;height:36px}
+.scroll .it .s{font-size:11.5px}
+.wheel{text-align:center}
+.wheel svg{width:100%;max-width:280px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.chip{background:var(--panel2);border:1px solid var(--line);padding:5px 10px;border-radius:99px;font-size:12px;color:var(--mute)}
+.chip.on{color:#1a0c00;background:var(--accent2);border-color:var(--accent2)}
+.adm label{display:flex;align-items:center;gap:10px;margin:12px 0 6px;font-weight:500}
+.adm .hint{color:var(--mute);font-size:12.5px;line-height:1.5;margin-bottom:6px}
+.adm input[type=number],.adm input[type=password]{width:140px}
+.adm .grp{border-top:1px solid var(--line);padding-top:6px;margin-top:10px}
+@media(max-width:980px){.up{grid-template-columns:1fr}.wheel{order:-1}}
+.crate img.face{height:92%;aspect-ratio:1;object-fit:cover;border-radius:20px;border:2px solid #ffffff40;box-shadow:0 8px 20px var(--glow,#ff6a2b66);transition:.2s}
+.card:hover .crate img.face{transform:scale(1.06) rotate(-2deg)}
+nav button{white-space:nowrap}.bal{white-space:nowrap}.wallet{flex:none}
+.live{display:flex;gap:12px;margin-bottom:20px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:10px;overflow:hidden}
+.onl{flex:none;display:flex;flex-direction:column;justify-content:center;padding:0 14px 0 6px;border-right:1px solid var(--line);min-width:96px}
+.onl b{font-size:18px;font-variant-numeric:tabular-nums;white-space:nowrap}.onl small{color:var(--mute);font-size:11px}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:6px;box-shadow:0 0 8px var(--green);animation:pl 1.6s infinite}
+@keyframes pl{50%{opacity:.35}}
+@keyframes slin{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:none}}
+.feed{display:flex;gap:8px;overflow:hidden;flex:1;min-width:0}
+.fd{flex:none;width:156px;background:var(--panel2);border:1px solid var(--line);border-bottom:3px solid var(--c);border-radius:10px;padding:6px 8px;position:relative;overflow:hidden}
+.fd:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 30%,var(--c),transparent 70%);opacity:.2}
+.fd.new{animation:slin .5s ease}
+.fd *{position:relative}.fd .fi svg{width:100%;height:34px}
+.fd b{display:block;font-size:11px;color:var(--mute);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fd span{display:block;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fd em{font-style:normal;font-size:12px;color:var(--accent2);font-weight:600}
+@media(max-width:640px){
+ .hero h1{font-size:23px}
+ .bar{padding:8px 12px;gap:8px 10px}
+ .logo{font-size:19px}
+ .wallet{margin-left:auto;gap:8px}
+ .bal{padding:7px 10px;font-size:14px}
+ nav{order:3;flex:0 0 100%;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+ nav::-webkit-scrollbar{display:none}
+ nav button{flex:none;padding:8px 12px}
+ .cv-head .crate{width:140px}
+ .onl{min-width:84px;padding-right:10px}
+}
+</style>
+</head>
+<body>
+<header><div class="bar">
+  <div class="logo" id="logo"><i></i>Case<b>Vault</b></div>
+  <nav id="nav">
+    <button data-v="cases" class="on">Кейсы</button>
+    <button data-v="up">Апгрейд</button>
+    <button data-v="inv">Инвентарь <span id="invCount"></span></button>
+  </nav>
+  <div class="wallet">
+    <div class="bal" id="bal">$0.00</div>
+    <button class="btn sm" id="depBtn">+ Пополнить</button>
+  </div>
+</div></header>
+<main id="app"></main>
+<div class="modal" id="modal"><div class="box" id="modalBox"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ ДАННЫЕ ============
+   Цены — ориентировочный снимок рынка: fn = Factory New, bs = самый дешёвый износ.
+   est:true — оценка там, где точной цены в открытых источниках найти не удалось. */
+const FACE="data:image/jpeg;base64,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";
+const SNAPSHOT_DATE = "22.11.2026";
+const KEY_PRICE = 2.49;
+const ODDS = {mil:79.92,res:15.98,cls:3.2,cov:0.64,rare:0.26};
+const RAR = ["mil","res","cls","cov","rare"];
+const RN = {mil:"Mil-Spec",res:"Restricted",cls:"Classified",cov:"Covert",rare:"Редкий предмет ★"};
+const S=(r,n,fn,bs,o={})=>({r,n,fn,bs,lo:o.lo??0,hi:o.hi??1,est:!!o.est});
+
+const REAL = [
+{ id:"deadhand", name:"Sealed Dead Hand Terminal", tag:"Новинка · март 2026", price:0.29+KEY_PRICE, glow:"#c9a227", emb:"DH", kind:"Официальный",
+  info:"Терминал коллекции Dead Hand: 17 скинов и 22 новые перчатки — первые с 2020 года. Ключ не нужен, но в игре предмет приходится выкупать; здесь это упрощено до фиксированной цены открытия ($0,29 терминал + $2,49 выкуп).",
+  items:[
+   S("cov","AWP | Queen's Gambit",198,36.4),S("cov","Glock-18 | Fully Tuned",120,25,{est:1}),
+   S("cls","AK-47 | Crane Flight",62.5,8.42),S("cls","P250 | Kintsugi",30,4,{est:1}),S("cls","P90 | Deathgaze",25,3.5,{est:1}),
+   S("res","M4A1-S | Electrum",7.27,0.63),S("res","Desert Eagle | Firebreathing",6,0.5,{est:1}),S("res","Galil AR | Galigator",5,0.4,{est:1}),S("res","MP7 | Amberline",5,0.4,{est:1}),S("res","MP9 | Urban Sovereign",4,0.4,{est:1}),
+   S("mil","USP-S | Silent Shot",1.45,0.11),S("mil","M4A4 | Zubastick",1.4,0.1,{est:1}),S("mil","Five-SeveN | Dark Polymer",1.3,0.1,{est:1}),S("mil","M249 | Bock Blocks",1.2,0.08,{est:1}),S("mil","PP-Bizon | RMX",1.2,0.08,{est:1}),S("mil","Sawed-Off | Fusion",1,0.07,{est:1}),S("mil","UMP-45 | Fragment",1.2,0.08,{est:1}),
+   ...[["Sport Gloves | Occult",893],["Specialist Gloves | Cloud Chaser",788],["Specialist Gloves | Pillow Punchers",628],["Specialist Gloves | Sunburst",260],["Sport Gloves | Creme Pinstripe",245]]
+     .map(([n,ft])=>S("rare","★ "+n,ft*2.2,ft*.55)),
+   ...[["Sport Gloves | Blaze",520],["Sport Gloves | Frosty",300],["Sport Gloves | Red Racer",330],["Sport Gloves | Ultra Violent",420],["Sport Gloves | Violet Beadwork",350],
+       ["Specialist Gloves | Big Swell",300],["Specialist Gloves | Blackbook",330],["Specialist Gloves | Chocolate Chesterfield",280],["Specialist Gloves | Lime Polycam",360],
+       ["Driver Gloves | Brocade Crane",180],["Driver Gloves | Brocade Flowers",170],["Driver Gloves | Dragon Fists",230],["Driver Gloves | Garden",150],["Driver Gloves | Hand Sweaters",160],["Driver Gloves | Plum Quill",170],["Driver Gloves | Seigaiha",200],["Driver Gloves | Wave Chaser",190]]
+     .map(([n,ft])=>S("rare","★ "+n,ft*2.2,ft*.55,{est:1}))
+  ]},
+{ id:"fever", name:"Fever Case", tag:"Armory · март 2025", price:0.79+KEY_PRICE, glow:"#19c5c5", emb:"FV", kind:"Официальный",
+  info:"Последний классический кейс Valve. Вершина — AWP | Printstream и FAMAS | Bad Trip, редкие предметы — ножи Shattered Web в финишах Chroma.",
+  items:[
+   S("cov","AWP | Printstream",567.2,45.8),S("cov","FAMAS | Bad Trip",116.82,44.88),
+   S("cls","AK-47 | Searing Rage",55.24,4.88),S("cls","Glock-18 | Shinobu",62.4,5),S("cls","UMP-45 | K.O. Factory",34.37,4.5),
+   S("res","Desert Eagle | Serpent Strike",6.09,.55),S("res","Galil AR | Control",6.12,.45),S("res","Zeus x27 | Tosai",4.57,.45),S("res","P90 | Wave Breaker",7.92,.46),S("res","Nova | Rising Sun",8.5,.43),
+   S("mil","USP-S | PC-GRN",4.93,.16),S("mil","M4A4 | Choppa",4.15,.07),S("mil","SSG 08 | Memorial",3.71,.06),S("mil","MP9 | Nexus",2.4,.06),S("mil","XM1014 | Mockingbird",1.5,.06),S("mil","MAG-7 | Resupply",1,.06),S("mil","P2000 | Sure Grip",.99,.06),
+   S("rare","★ Skeleton Knife | Doppler",1100,877),S("rare","★ Nomad Knife | Doppler",700,520,{est:1}),S("rare","★ Paracord Knife | Doppler Sapphire",1600,470),S("rare","★ Survival Knife | Doppler",330,210),S("rare","★ Paracord Knife | Marble Fade",420,250,{est:1}),S("rare","★ Nomad Knife | Rust Coat",150,90,{est:1}),S("rare","★ Paracord Knife | Rust Coat",90,52)
+  ]},
+{ id:"kilowatt", name:"Kilowatt Case", tag:"Активный дроп-пул", price:0.11+KEY_PRICE, glow:"#3b82f6", emb:"KW", kind:"Официальный",
+  info:"Первый кейс, созданный специально для CS2. Топ — AK-47 | Inheritance и AWP | Chrome Cannon, редкие предметы — ножи Kukri.",
+  items:[
+   S("cov","AK-47 | Inheritance",115,31.63,{hi:.8}),S("cov","AWP | Chrome Cannon",74.29,24),
+   S("cls","M4A1-S | Black Lotus",14.06,3.9,{hi:.7}),S("cls","USP-S | Jawbreaker",21.55,2.78),S("cls","Zeus x27 | Olympus",8,2.8,{hi:.67}),
+   S("res","M4A4 | Etch Lord",5.68,.32),S("res","Glock-18 | Block-18",1.88,.39,{hi:.67}),S("res","Sawed-Off | Analog Input",1.24,.32),S("res","Five-SeveN | Hybrid",4.04,.29),S("res","MP7 | Just Smile",3.51,.3),
+   S("mil","SSG 08 | Dezastre",1.5,.07,{est:1}),S("mil","Nova | Dark Sigil",1.2,.06,{est:1}),S("mil","Dual Berettas | Hideout",1.2,.06,{est:1}),S("mil","MAC-10 | Light Box",1,.06,{est:1}),S("mil","Tec-9 | Slag",1,.06,{est:1}),S("mil","UMP-45 | Motorized",.9,.06,{est:1}),S("mil","XM1014 | Irezumi",.9,.06,{est:1}),
+   S("rare","★ Kukri Knife | Fade",870,696),S("rare","★ Kukri Knife | Crimson Web",1498,245),S("rare","★ Kukri Knife | Slaughter",517,440),S("rare","★ Kukri Knife | Case Hardened",420,300,{est:1}),S("rare","★ Kukri Knife | Night Stripes",180,120,{est:1}),S("rare","★ Kukri Knife | Stained",190,130,{est:1}),S("rare","★ Kukri Knife | Blue Steel",200,140,{est:1}),S("rare","★ Kukri Knife | Forest DDPAT",170,110,{est:1}),S("rare","★ Kukri Knife | Boreal Forest",170,110,{est:1}),S("rare","★ Kukri Knife | Safari Mesh",160,105,{est:1}),S("rare","★ Kukri Knife | Scorched",160,105,{est:1}),S("rare","★ Kukri Knife | Urban Masked",160,105,{est:1}),S("rare","★ Kukri Knife | Vanilla",260,200,{est:1})
+  ]}
+];
+REAL.forEach(c=>{c.odds=ODDS;c.items.forEach(i=>i.case=c.id)});
+/* 150 новых скинов: цена растёт от ~$1 до ~$600 (геометрическая шкала) */
+const NEWSTR="P250|Sand Dune;Nova|Predator;MAG-7|Sand Dune;Tec-9|Urban DDPAT;MP7|Skulls;SG 553|Army Sheen;Glock-18|Sand Dune;UMP-45|Carbon Fiber;Sawed-Off|Forest DDPAT;G3SG1|Desert Storm;MAC-10|Tarnish;FAMAS|Colony;Dual Berettas|Stained;PP-Bizon|Carbon Fiber;XM1014|Blue Spruce;Five-SeveN|Orange Peel;M249|Magma;P2000|Granite Marbleized;AUG|Storm;Galil AR|Sage Spirit;CZ75-Auto|Tuxedo;MP9|Rose Iron;USP-S|Torque;Nova|Walnut;SCAR-20|Contractor;Negev|Anodized Navy;R8 Revolver|Bone Mask;MP5-SD|Lab Rats;P90|Module;AK-47|Safari Mesh;M4A4|Evil Daimyo;Glock-18|Candy Apple;SSG 08|Blue Spruce;Desert Eagle|Mudder;UMP-45|Gunsmoke;MAC-10|Neon Rider;MP7|Nemesis;Tec-9|Fuel Injector;FAMAS|Pulse;SG 553|Pulse;P250|Mehndi;Five-SeveN|Case Hardened;AUG|Chameleon;XM1014|Tranquility;Galil AR|Chatterbox;M4A1-S|Guardian;AK-47|Elite Build;USP-S|Cortex;Nova|Hyper Beast;MP9|Hydra;P90|Asiimov;AWP|Worm God;CZ75-Auto|Victoria;Glock-18|Water Elemental;M4A4|Desolate Space;Dual Berettas|Cobra Strike;SSG 08|Blood in the Water;AK-47|Redline;FAMAS|Roll Cage;Desert Eagle|Oxide Blaze;R8 Revolver|Fade;MAC-10|Stalker;M4A1-S|Cyrex;USP-S|Kill Confirmed;AUG|Bengal Tiger;SCAR-20|Cyrex;P250|Asiimov;Five-SeveN|Hyper Beast;MP7|Bloodsport;AWP|Atheris;AK-47|Vulcan;M4A4|Neo-Noir;Glock-18|Fade;AWP|Elite Build;Desert Eagle|Code Red;M4A1-S|Hyper Beast;USP-S|Neo-Noir;AK-47|Asiimov;AWP|Asiimov;SG 553|Cyrex;M4A4|The Emperor;AK-47|Bloodsport;AWP|Hyper Beast;Desert Eagle|Blaze;AK-47|Neon Revolution;USP-S|Orion;M4A1-S|Printstream;AWP|Neo-Noir;AK-47|Head Shot;M4A1-S|Mecha Industries;AK-47|Neon Rider;AWP|Fever Dream;M4A4|Buzz Kill;Glock-18|Gamma Doppler;Desert Eagle|Kumicho Dragon;USP-S|Printstream;AWP|Containment Breach;AK-47|The Empress;M4A4|Hellfire;AK-47|Fuel Injector;AWP|Oni Taiji;AK-47|Hydroponic;M4A1-S|Chantico's Fire;Desert Eagle|Ocean Drive;AWP|Wildfire;AK-47|Aquamarine Revenge;M4A4|Bullet Rain;Glock-18|Vogue;USP-S|Blueprint;AWP|Lightning Strike;M4A1-S|Golden Coil;AK-47|Gold Arabesque;AWP|Man-o'-war;AK-47|Fire Serpent;M4A4|Poseidon;AWP|Redline;M4A1-S|Knight;AK-47|Case Hardened;Desert Eagle|Hand Cannon;AWP|Graphite;★ Bayonet|Boreal Forest;★ Flip Knife|Safari Mesh;★ Gut Knife|Scorched;★ Huntsman Knife|Urban Masked;★ Falchion Knife|Forest DDPAT;★ Bowie Knife|Safari Mesh;★ Navaja Knife|Stained;★ Stiletto Knife|Scorched;★ Shadow Daggers|Night Stripes;★ Ursus Knife|Scorched;★ Flip Knife|Forest DDPAT;★ Karambit|Boreal Forest;★ M9 Bayonet|Safari Mesh;★ Butterfly Knife|Scorched;★ Talon Knife|Urban Masked;★ Bayonet|Blue Steel;★ Huntsman Knife|Stained;★ Gut Knife|Fade;★ Hand Wraps|Duct Tape;★ Moto Gloves|Eclipse;★ Hand Wraps|Cobalt Skulls;★ Driver Gloves|Black Tie;★ Bloodhound Gloves|Charred;★ Moto Gloves|Spearmint;★ Hand Wraps|Slaughter;★ Bayonet|Slaughter;★ Flip Knife|Fade;★ Sport Gloves|Scarlet Shamagh;★ Specialist Gloves|Fade;★ Karambit|Stained";
+const OLD = REAL.flatMap(c=>c.items);
+const NEW = NEWSTR.split(";").map((s,i,a)=>{
+  const p=Math.max(1,Math.round(Math.pow(600,i/(a.length-1))*100)/100),n=s.replace("|"," | ");
+  const r=n[0]==="★"?"rare":p<3?"mil":p<12?"res":p<50?"cls":"cov";
+  const o=S(r,n,p*1.1,p*.85);o.case="new";return o;
+});
+const ALL = [...OLD,...NEW];
+
+/* ---- тип оружия по названию (для картинок и тематических кейсов) ---- */
+function weaponType(n){
+  if(/Gloves|Wraps/.test(n))return"gloves";
+  if(/Knife|Daggers|Karambit|Bayonet/.test(n))return"knife";
+  const w=n.split(" | ")[0];
+  if(/^(AWP|SSG 08|SCAR-20|G3SG1)$/.test(w))return"sniper";
+  if(/^(AK-47|M4A4|M4A1-S|FAMAS|Galil AR|SG 553|AUG)$/.test(w))return"rifle";
+  if(/^(MP7|MP9|UMP-45|P90|PP-Bizon|MAC-10|MP5-SD)$/.test(w))return"smg";
+  if(/^(Nova|Sawed-Off|MAG-7|XM1014)$/.test(w))return"shotgun";
+  if(/^(M249|Negev)$/.test(w))return"mg";
+  if(/^Zeus/.test(w))return"zeus";
+  return"pistol";
+}
+
+/* ---- тематические кейсы CaseVault: свои пулы и шансы ---- */
+const WEARS=["Factory New","Minimal Wear","Field-Tested","Well-Worn","Battle-Scarred"];
+const WT=[1,.55,.30,.12,0];
+const WB=[[0,.07],[.07,.15],[.15,.38],[.38,.45],[.45,1]];
+const wearOf=f=>f<.07?0:f<.15?1:f<.38?2:f<.45?3:4;
+function priceOf(it,w,stt){
+  let p=it.bs*Math.pow(it.fn/it.bs,WT[w]);
+  if(stt)p*=2.5;
+  return Math.max(.03,Math.round(p*100)/100);
+}
+const T=t=>ALL.filter(i=>weaponType(i.n)===t);
+const ft=i=>priceOf(i,2,false),band=(a,b)=>ALL.filter(i=>ft(i)>=a&&ft(i)<=b);
+const NOREAL=ALL.filter(i=>i.r!=="rare");
+const CUSTOM = [
+ {id:"starter",name:"Budget Starter",tag:"Дёшево и весело",glow:"#22c55e",emb:"$",info:"Бюджетный кейс: в основном Mil-Spec и Restricted, но иногда прилетает и красный.",items:NOREAL,odds:{mil:70,res:24,cls:5,cov:1}},
+ {id:"silver",name:"Silver Mix",tag:"Всего понемногу",glow:"#94a3b8",emb:"Ag",info:"Скины из всех кейсов сразу и крошечный шанс на нож или перчатки.",items:ALL,odds:{mil:60,res:25,cls:10,cov:4,rare:1}},
+ {id:"lucky",name:"Lucky Dip",tag:"Для азартных",glow:"#f472b6",emb:"7",info:"Шансы на дорогой дроп выше, чем в обычных кейсах, но и цена открытия выше.",items:ALL,odds:{mil:35,res:30,cls:20,cov:10,rare:5}},
+ {id:"awp",name:"AWP Arsenal",tag:"Только снайперки",glow:"#38bdf8",emb:"AWP",info:"Только снайперские скины: AWP, SSG 08, SCAR-20 и G3SG1 — от копеечных до красных.",items:T("sniper"),odds:{mil:45,res:25,cls:18,cov:12}},
+ {id:"rifles",name:"Rifle Pack",tag:"Автоматы и винтовки",glow:"#f97316",emb:"AK",info:"AK-47, M4A4, M4A1-S, FAMAS и Galil из всех кейсов.",items:T("rifle"),odds:{mil:45,res:30,cls:18,cov:7}},
+ {id:"pistols",name:"Pistol Party",tag:"Только пистолеты",glow:"#a78bfa",emb:"P",info:"Пистолеты: Glock-18, USP-S, Desert Eagle, P250, Five-SeveN и другие.",items:T("pistol"),odds:{mil:50,res:30,cls:15,cov:5}},
+ {id:"smg",name:"SMG & Shotguns",tag:"Пистолеты-пулемёты",glow:"#eab308",emb:"SMG",info:"Пистолеты-пулемёты, дробовики и пулемёт M249. Дёшево, без красных скинов.",items:[...T("smg"),...T("shotgun"),...T("mg"),...T("zeus")],odds:{mil:55,res:33,cls:12}},
+ {id:"knives",name:"Knife Hunter",tag:"Только ножи",glow:"#e5e7eb",emb:"★",info:"Каждое открытие — нож: Kukri, Skeleton, Nomad, Paracord, Survival. Дорого, зато без пустых дропов.",items:ALL.filter(i=>weaponType(i.n)==="knife"),odds:{rare:100}},
+ {id:"gloves",name:"Gloves Rush",tag:"Только перчатки",glow:"#fb7185",emb:"GL",info:"Перчатки Dead Hand и новые: Driver, Specialist, Sport, Moto, Bloodhound, Hand Wraps.",items:ALL.filter(i=>weaponType(i.n)==="gloves"),odds:{rare:100}},
+ {id:"oldschool",name:"Old School",tag:"Старые скины",glow:"#a16207",emb:"OS",info:"Только скины, которые были на сайте с самого начала: Dead Hand, Fever и Kilowatt, без ножей и перчаток.",items:OLD.filter(i=>i.r!=="rare"),odds:{mil:60,res:25,cls:10,cov:5}},
+ {id:"oldlegends",name:"Old Legends",tag:"Старые + редкие",glow:"#ca8a04",emb:"OL",info:"Весь старый пул, включая ножи Kukri, Shattered Web и перчатки Dead Hand.",items:OLD,odds:{mil:50,res:25,cls:15,cov:8,rare:2}},
+ {id:"newwave",name:"New Wave",tag:"Новые скины",glow:"#06b6d4",emb:"NW",info:"Только новые 150 скинов: от $1 до дорогих красных.",items:NEW.filter(i=>i.r!=="rare"),odds:{mil:40,res:35,cls:18,cov:7}},
+ {id:"dollar",name:"Dollar Drop",tag:"Всё до $8",glow:"#84cc16",emb:"$1",info:"Самый дешёвый кейс: в пуле только скины до $8 из старых и новых.",items:band(0,8),odds:{mil:70,res:25,cls:5}},
+ {id:"pocket",name:"Pocket Rockets",tag:"Новые до $15",glow:"#2dd4bf",emb:"PR",info:"Новые скины дешевле $15. Копейки на входе, шанс на приятный дроп.",items:NEW.filter(i=>i.r!=="rare"&&ft(i)<=15),odds:{mil:60,res:40}},
+ {id:"mid",name:"Mid Roller",tag:"$15–$120",glow:"#60a5fa",emb:"MR",info:"Середина рынка: скины от $15 до $120 из всех кейсов.",items:band(15,120),odds:{mil:30,res:35,cls:25,cov:10}},
+ {id:"premium",name:"Premium 600",tag:"Дорогие скины",glow:"#e879f9",emb:"600",info:"Только дорогие предметы от $120 до $700: красные скины, ножи и перчатки.",items:band(120,700),odds:{res:10,cls:35,cov:35,rare:20}},
+ {id:"heritage",name:"Heritage Mix",tag:"Старые + новые",glow:"#fb923c",emb:"HM",info:"Старые и новые скины в одном кейсе, ножи и перчатки — редкий бонус.",items:ALL,odds:{mil:45,res:30,cls:15,cov:8,rare:2}},
+ {id:"heat",name:"Heat Check",tag:"Розовые и красные",glow:"#ef4444",emb:"HC",info:"Только Classified и Covert из всех кейсов — без мусора.",items:ALL.filter(i=>i.r==="cls"||i.r==="cov"),odds:{cls:78,cov:22}},
+ {id:"blades",name:"Blade Storm",tag:"Новые ножи",glow:"#cbd5e1",emb:"BS",info:"Каждое открытие — новый нож: Bayonet, Karambit, Flip, Huntsman, Talon и другие.",items:NEW.filter(i=>weaponType(i.n)==="knife"),odds:{rare:100}},
+ {id:"jackpot",name:"Jackpot Mix",tag:"High roller",glow:"#fbbf24",emb:"JP",info:"Все пять редкостей выпадают одинаково часто — по 20%. Для тех, кто пришёл за топом.",items:ALL,odds:{mil:20,res:20,cls:20,cov:20,rare:20}}
+];
+
+const SPECIAL = [
+ {id:"face",name:"Face Case",tag:"Лицо сайта",glow:"#f59e0b",img:FACE,info:"Фирменный кейс с лицом сайта на обложке. Скины из всех кейсов, шансы на дорогой дроп чуть выше среднего.",items:ALL,odds:{mil:45,res:28,cls:16,cov:8,rare:3}},
+ {id:"cashback",name:"Cashback Case",tag:"Возврат 80%",glow:"#10b981",emb:"%",fixed:5,back:.8,info:"Кейс возврата: цена $5, а любой дроп стоит минимум 80% от неё — то есть от $4. Иногда выпадает и намного больше.",items:band(3,60).filter(i=>i.r!=="rare"),odds:{mil:55,res:30,cls:12,cov:3}}
+];
+/* ---- математика цен ---- */
+function evItem(it){
+  const span=it.hi-it.lo;let e=0;
+  WB.forEach(([a,b],w)=>{const pr=Math.max(0,Math.min(b,it.hi)-Math.max(a,it.lo))/span;e+=pr*priceOf(it,w,false)});
+  return e*(it.r==="rare"?1:1.15);
+}
+function normOdds(c){
+  const have=RAR.filter(r=>c.odds[r]>0&&c.items.some(i=>i.r===r));
+  const tot=have.reduce((a,r)=>a+c.odds[r],0);
+  const o={};have.forEach(r=>o[r]=c.odds[r]/tot*100);return o;
+}
+function caseEV(c){
+  const o=normOdds(c);let ev=0;
+  for(const r in o){const pool=c.items.filter(i=>i.r===r);ev+=o[r]/100*pool.reduce((a,i)=>a+evItem(i),0)/pool.length}
+  return ev;
+}
+[...SPECIAL,...CUSTOM].forEach(c=>{c.nodds=normOdds(c);c.kind=SPECIAL.includes(c)?"Особый":"Тематический";c.price=c.fixed||Math.max(.49,Math.round(caseEV(c)*1.1*100)/100)});
+REAL.forEach(c=>{c.nodds=normOdds(c)});
+const CASES=[...REAL,...SPECIAL,...CUSTOM];
+
+/* ============ ПЕРСОНАЖИ-КАРТИНКИ: SVG-силуэты ============ */
+const SIL={
+ rifle:"M3 24 L28 21 L32 17 L70 17 L74 13 L98 13 L98 18 L117 19 L117 23 L88 25 L84 36 L74 36 L72 27 L52 28 L48 42 L38 42 L40 28 L30 29 L22 36 L10 38 Z",
+ sniper:"M2 27 L22 24 L26 20 L66 21 L70 16 L96 16 L96 21 L118 22 L118 25 L96 26 L92 36 L82 36 L80 28 L58 29 L52 40 L42 40 L44 30 L28 31 L20 38 L6 38 Z M38 14 a3 3 0 0 1 3-3 h22 a3 3 0 0 1 0 6 h-22 a3 3 0 0 1 -3-3Z",
+ pistol:"M24 16 L92 16 L92 26 L62 26 L62 32 L69 45 L54 45 L48 30 L48 26 L24 26 Z",
+ smg:"M8 23 L30 20 L34 17 L84 17 L88 14 L106 14 L106 19 L116 20 L116 24 L92 25 L88 27 L84 41 L74 41 L74 28 L50 28 L46 40 L36 40 L38 28 L28 29 L18 35 L8 33 Z",
+ shotgun:"M2 26 L30 22 L34 18 L76 19 L78 16 L118 16 L118 22 L86 23 L80 25 L78 35 L68 35 L68 27 L56 28 L50 41 L40 41 L44 28 L32 29 L22 36 L8 36 Z",
+ mg:"M4 22 L26 20 L30 15 L66 15 L70 11 L100 11 L100 17 L117 18 L117 24 L100 25 L96 34 L88 34 L86 28 L64 30 L60 45 L48 45 L50 31 L30 31 L22 38 L10 38 Z",
+ zeus:"M24 14 L80 14 L94 18 L94 31 L70 31 L66 44 L52 44 L52 31 L24 31 Z",
+ knife:"M4 41 C30 10 72 3 112 11 C94 25 56 35 14 41 Z M4 41 L2 46 L16 47 L18 39 Z",
+ gloves:"M32 46 L30 24 Q29 19 34 19 L37 19 L37 30 L41 30 L41 11 Q41 6 45 6 Q49 6 49 11 L49 28 L53 28 L53 6 Q53 1 57 1 Q61 1 61 6 L61 28 L65 28 L65 10 Q65 5 69 5 Q73 5 73 10 L73 36 L80 27 Q83 22 87 25 Q91 28 88 32 L77 47 L69 49 L36 49 Z"
+};
+function hash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+function rng(seed){return()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const HUES=[[/Fade/,320,35,75],[/Sapphire/,212,228,85],[/Ruby|Slaughter|Crimson|Red Racer|Ultra Violent/,355,8,75],[/Blue Steel|Cobalt|Frosty|Wave Chaser|Cloud Chaser/,208,225,60],[/Forest|Boreal|Safari|Garden|Lime/,105,70,45],[/Scorched|Stained|Rust|Chesterfield|Case Hardened/,28,215,55],[/Vanilla|Printstream|Silent Shot/,0,0,0],[/Sunburst|Amberline|Electrum|Fully Tuned|Gambit|Blaze/,45,28,85],[/Night Stripes|Urban|Occult|Blackbook/,260,230,15]];
+function skinSVG(n){
+  const t=weaponType(n),h=hash(n),R=rng(h);
+  let h1=h%360,h2=(h1+40+(h>>8)%80)%360,sat=55+(h>>4)%35;
+  for(const [re,a,b,s] of HUES)if(re.test(n)){h1=a;h2=b;sat=s;break}
+  const c1=`hsl(${h1} ${sat}% 56%)`,c2=`hsl(${h2} ${sat}% 26%)`;
+  const id="k"+(skinSVG.n=(skinSVG.n||0)+1),pat=h%5;
+  let ov="";
+  if(pat===0)for(let k=0;k<8;k++)ov+=`<rect x="${-20+k*18}" y="-10" width="6" height="80" transform="rotate(28 60 25)" fill="#fff" opacity=".17"/>`;
+  else if(pat===1)for(let k=0;k<26;k++)ov+=`<circle cx="${R()*120}" cy="${R()*50}" r="${1+R()*2.2}" fill="#fff" opacity="${.12+R()*.2}"/>`;
+  else if(pat===2)for(let k=0;k<9;k++)ov+=`<ellipse cx="${R()*120}" cy="${R()*50}" rx="${6+R()*10}" ry="${3+R()*5}" fill="#000" opacity=".28" transform="rotate(${R()*180} 60 25)"/>`;
+  else if(pat===3)ov=`<polygon points="0,50 40,0 62,0 22,50" fill="#fff" opacity=".18"/><polygon points="60,50 100,0 108,0 68,50" fill="#fff" opacity=".12"/>`;
+  else for(let k=0;k<7;k++)ov+=`<rect x="-5" y="${k*8}" width="130" height="2.4" fill="#fff" opacity=".15"/>`;
+  const p=SIL[t];
+  return `<svg viewBox="0 0 120 50" preserveAspectRatio="xMidYMid meet"><defs><linearGradient id="${id}g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c1}"/><stop offset="1" stop-color="${c2}"/></linearGradient><clipPath id="${id}c"><path d="${p}"/></clipPath></defs><g clip-path="url(#${id}c)"><rect width="120" height="50" fill="url(#${id}g)"/>${ov}<rect y="0" width="120" height="6" fill="#fff" opacity=".12"/></g><path d="${p}" fill="none" stroke="#000" stroke-opacity=".6" stroke-width="1.3"/></svg>`;
+}
+function crateSVG(color,emb){
+  const g="g"+color.slice(1)+(emb||"").length;
+  return `<svg width="150" height="130" viewBox="0 0 150 130" style="--glow:${color}66"><defs><linearGradient id="${g}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${color}"/><stop offset="1" stop-color="#1a2030"/></linearGradient></defs>
+  <path d="M15 40 75 15 135 40 135 95 75 120 15 95Z" fill="url(#${g})" stroke="${color}" stroke-width="2"/>
+  <path d="M15 40 75 65 135 40M75 65V120" stroke="#0c0e14" stroke-width="3" fill="none" opacity=".55"/>
+  <rect x="58" y="78" width="34" height="22" rx="4" fill="#0c0e14" opacity=".72"/>
+  <text x="75" y="93" text-anchor="middle" font-family="Rubik,sans-serif" font-weight="700" font-size="${(emb||"").length>2?10:13}" fill="${color}">${emb||""}</text></svg>`;
+}
+
+/* ============ СОСТОЯНИЕ ============ */
+const KEY="casevault_v3";
+const fresh=()=>({bal:0,dep:{d:"",s:0},inv:[],opened:0,spent:0,sold:0,lastBonus:0,uid:1,admin:{upWin:false,payback:0},ups:0});
+let st=fresh();
+try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s&&typeof s.bal==="number"){st=Object.assign(st,s);st.admin=Object.assign({upWin:false,payback:0},s.admin||{})}}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}};
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const fmt=n=>"$"+n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* ============ ЛОГИКА ============ */
+function pickRarity(c){
+  let r=Math.random()*100,acc=0;const o=c.nodds;
+  for(const k of RAR){if(!o[k])continue;acc+=o[k];if(r<acc)return k}
+  return Object.keys(o)[0];
+}
+function roll(c){
+  const rar=pickRarity(c);
+  const pool=c.items.filter(i=>i.r===rar);
+  const it=pool[Math.floor(Math.random()*pool.length)];
+  const f=it.lo+Math.random()*(it.hi-it.lo);
+  const w=wearOf(f);
+  const stt=it.r!=="rare"&&Math.random()<.1;
+  return {uid:st.uid++,n:it.n,r:it.r,case:it.case,w,f:+f.toFixed(4),st:stt,p:priceOf(it,w,stt)};
+}
+const fakeRoll=c=>{const it=roll(c);st.uid--;it.uid=0;return it};
+function drop(c){ // с учётом настройки окупа в админ-панели
+  let d=roll(c);const pb=Math.max(+st.admin.payback||0,(c.back||0)*100);
+  if(pb>0){
+    const th=c.price*pb/100;let k=0;
+    while(d.p<th&&k++<500)d=roll(c);
+    if(d.p<th){const top=[...c.items].sort((a,b)=>b.fn-a.fn)[0];d={uid:st.uid++,n:top.n,r:top.r,case:top.case,w:0,f:.01,st:false,p:priceOf(top,0,false)}}
+  }
+  return d;
+}
+
+/* ============ ВИДЫ ============ */
+let view="cases",curCase=null,busy=false,fast=false,adminOK=false;
+const UP={sel:new Set(),target:null,q:"",range:0};
+const RANGES=[["Все",1.05,1e9],["×1–2",1.05,2],["×2–5",2,5],["×5–10",5,10],["×10–50",10,50],["×50+",50,1e9]];
+
+function itCard(i,extra="",cls=""){
+  const wear=i.w!=null?WEARS[i.w]:"";
+  return `<div class="it ${i.r} ${i.est?"est":""} ${cls}"><div class="w">${i.st?"StatTrak™ · ":""}${wear}</div><div class="ico">${skinSVG(i.n)}</div><div class="s">${esc(i.n)}</div><div class="p">${fmt(i.p)}</div>${extra}</div>`;
+}
+function setView(v){
+  view=v;curCase=null;
+  $$("#nav button").forEach(b=>b.classList.toggle("on",b.dataset.v===v));
+  render();window.scrollTo(0,0);
+}
+function head(){
+  $("#bal").textContent=fmt(st.bal);
+  $("#invCount").textContent=st.inv.length?`(${st.inv.length})`:"";
+}
+function render(){
+  head();
+  const app=$("#app");
+  if(curCase)return renderCase(app);
+  if(view==="cases")return renderCases(app);
+  if(view==="up")return renderUp(app);
+  renderInv(app);
+}
+function crateHTML(c){return c.img?`<img class="face" src="${c.img}" alt="${esc(c.name)}">`:crateSVG(c.glow,c.emb)}
+function caseCard(c){
+  const rtp=c.back?"≥ "+Math.round(c.back*100):"≈ "+Math.round(caseEV(c)/c.price*100);
+  return `<div class="card" data-c="${c.id}" style="--glow:${c.glow}66"><span class="tag">${c.tag}</span><div class="crate">${crateHTML(c)}</div>
+    <h3>${esc(c.name)}</h3><div class="meta"><span>${c.items.length} предметов</span><span>${c.kind}</span></div>
+    <div class="price">${fmt(c.price)}<small>возврат ${rtp}%</small></div></div>`;
+}
+function renderCases(app){
+  const val=st.inv.reduce((a,b)=>a+b.p,0);
+  app.innerHTML=`
+  <div class="live"><div class="onl"><b><i class="dot"></i><span id="onl">${online.toLocaleString("ru-RU")}</span></b><small>онлайн</small></div><div class="feed" id="feed"></div></div>
+  <section class="hero"><div><span class="pill">Симулятор · виртуальные деньги</span>
+    <h1>Открывай кейсы CS2 и прокачивай скины в апгрейдере</h1>
+    <p>Баланс стартует с $0 — пополни его кнопкой «Пополнить» (лимит $100 в день, есть промокоды). В официальных кейсах — шансы Valve, цены рынка на ${SNAPSHOT_DATE}. Тематические кейсы собраны из старых и новых скинов со своим дропом. Настоящие деньги не используются.</p></div>
+    <div class="stats"><div class="stat"><small>Открыто кейсов</small><b>${st.opened}</b></div>
+    <div class="stat"><small>Потрачено</small><b>${fmt(st.spent)}</b></div>
+    <div class="stat"><small>Инвентарь</small><b>${fmt(val)}</b></div></div></section>
+  <h2>Официальные кейсы</h2><div class="grid">${REAL.map(caseCard).join("")}</div>
+  <div class="sec"><h2>Особые кейсы</h2><div class="grid">${SPECIAL.map(caseCard).join("")}</div></div>
+  <div class="sec"><h2>Тематические кейсы CaseVault</h2><div class="grid">${CUSTOM.map(caseCard).join("")}</div></div>
+  <p class="note">Официальные кейсы — из актуального дроп-пула и Armory на ноябрь 2026. «Возврат» — расчётная доля цены кейса, которая в среднем возвращается скинами. Онлайн и лента дропов — симуляция (боты), пополнение виртуальное: реальные платежи не принимаются.</p>`;
+  drawFeed(false);
+  $$(".card").forEach(el=>el.onclick=()=>{curCase=CASES.find(c=>c.id===el.dataset.c);render();window.scrollTo(0,0)});
+}
+function renderCase(app){
+  const c=curCase;
+  const order=["cov","cls","res","mil","rare"].filter(r=>c.nodds[r]);
+  const sorted=[...c.items].sort((a,b)=>order.indexOf(a.r)-order.indexOf(b.r)||b.fn-a.fn);
+  const ev=caseEV(c);
+  app.innerHTML=`<button class="back" id="back">← Все кейсы</button>
+  <div class="cv-head" style="--glow:${c.glow}66"><div class="crate">${crateHTML(c)}</div>
+   <div><h1>${esc(c.name)}</h1><p>${esc(c.info)}</p>
+   <div class="opens"><button class="btn" data-n="1">Открыть за ${fmt(c.price)}</button>
+   <button class="btn ghost" data-n="3">×3 · ${fmt(c.price*3)}</button><button class="btn ghost" data-n="5">×5 · ${fmt(c.price*5)}</button>
+   <label class="chk"><input type="checkbox" id="fast" ${fast?"checked":""}> Быстро</label></div></div></div>
+  <div class="roulette" id="roul"><div class="needle"></div><div class="track" id="track"></div></div>
+  <div class="odds">${order.map(r=>`<span class="${r}"><i class="lbl"></i>${RN[r]} ${(+c.nodds[r].toFixed(2))}%</span>`).join("")}<span>${c.back?`Минимальный дроп ≥ ${fmt(c.price*c.back)} при цене ${fmt(c.price)}`:`Средний дроп ≈ ${fmt(ev)} при цене ${fmt(c.price)}`}</span></div>
+  <h2>Содержимое кейса · ${c.items.length}</h2><div class="items">${sorted.map(i=>itCard({...i,p:priceOf(i,2,false),w:2})).join("")}</div>
+  <p class="note">Цена на карточках — для износа Field-Tested. StatTrak™ выпадает с шансом 10% (цена ×2,5). Знак «~» — оценочная цена. Все шансы и цены — для симулятора.</p>`;
+  $("#back").onclick=()=>{curCase=null;render()};
+  $("#fast").onchange=e=>fast=e.target.checked;
+  $$(".opens .btn").forEach(b=>b.onclick=()=>openCase(+b.dataset.n));
+  fillIdle();
+}
+function fillIdle(){
+  const tr=$("#track");if(!tr||!curCase)return;
+  tr.style.transition="none";tr.style.transform="translateX(0)";
+  tr.innerHTML=Array.from({length:14},()=>itCard(fakeRoll(curCase))).join("");
+}
+function openCase(n){
+  if(busy)return;const c=curCase,cost=c.price*n;
+  if(st.bal<cost-1e-9){toast("Недостаточно средств. Пополни баланс или продай скины.");return}
+  st.bal-=cost;st.spent+=cost;st.opened+=n;
+  const drops=Array.from({length:n},()=>drop(c));
+  drops.forEach(d=>{st.inv.push(d);pushFeed("Ты",d,c,true)});
+  save();head();
+  if(n>1||fast){showWin(drops);return}
+  busy=true;
+  const win=drops[0],WIN=44,total=52;
+  const seq=Array.from({length:total},(_,i)=>i===WIN?win:fakeRoll(c));
+  const tr=$("#track");tr.style.transition="none";tr.style.transform="translateX(0)";
+  tr.innerHTML=seq.map(i=>itCard(i)).join("");
+  void tr.offsetWidth;
+  const cw=$("#roul").clientWidth,cardW=148,jitter=(Math.random()-.5)*100;
+  const x=WIN*cardW+70+jitter-cw/2;
+  tr.style.transition="transform 6s cubic-bezier(.08,.6,.12,1)";
+  tr.style.transform=`translateX(${-x}px)`;
+  setTimeout(()=>{busy=false;showWin(drops)},6300);
+}
+function showWin(drops){
+  const tot=drops.reduce((a,b)=>a+b.p,0);
+  const m=$("#modal");
+  $("#modalBox").innerHTML=`<h3>${drops.length>1?"Выпало":"Тебе выпало"}</h3>
+   <div class="won">${drops.map(d=>itCard(d)).join("")}</div>
+   <div class="row"><span style="margin-right:auto;color:var(--mute);align-self:center">Итого: <b style="color:var(--accent2)">${fmt(tot)}</b></span>
+   <button class="btn ghost" id="keep">В инвентарь</button><button class="btn" id="sellW">Продать за ${fmt(tot)}</button></div>`;
+  m.classList.add("on");
+  $("#keep").onclick=()=>{m.classList.remove("on");fillIdle();render()};
+  $("#sellW").onclick=()=>{drops.forEach(d=>sellUid(d.uid));save();m.classList.remove("on");fillIdle();render();toast("Продано за "+fmt(tot))};
+}
+function sellUid(uid){
+  const i=st.inv.findIndex(x=>x.uid===uid);if(i<0)return 0;
+  const p=st.inv[i].p;st.bal+=p;st.sold+=p;st.inv.splice(i,1);return p;
+}
+
+/* ---- инвентарь ---- */
+function renderInv(app){
+  const val=st.inv.reduce((a,b)=>a+b.p,0);
+  app.innerHTML=`<div class="inv-top"><h2 style="margin:0">Инвентарь · ${st.inv.length} предм. на ${fmt(val)}</h2>
+   <div class="row"><button class="btn ghost sm" id="reset">Сбросить прогресс</button><button class="btn sm" id="sellAll" ${st.inv.length?"":"disabled"}>Продать всё</button></div></div>
+   ${st.inv.length?`<div class="items inv">${[...st.inv].reverse().map(i=>itCard(i,`<button class="btn ghost sm" data-s="${i.uid}">Продать</button>`)).join("")}</div>`:`<div class="empty">Инвентарь пуст. Открой первый кейс!</div>`}
+   <p class="note">Продажа идёт по рыночной цене без комиссии.</p>`;
+  $$("[data-s]").forEach(b=>b.onclick=e=>{e.stopPropagation();const p=sellUid(+b.dataset.s);save();render();toast("Продано за "+fmt(p))});
+  const sa=$("#sellAll");if(sa)sa.onclick=()=>{const t=val;st.inv.forEach(i=>{st.bal+=i.p;st.sold+=i.p});st.inv=[];save();render();toast("Продано за "+fmt(t))};
+  $("#reset").onclick=()=>{if(!confirm0())return;const a=st.admin;st=fresh();st.admin=a;UP.sel.clear();UP.target=null;save();render()};
+}
+let _rc=0;function confirm0(){
+  _rc++;setTimeout(()=>_rc=0,2500);
+  if(_rc<2){toast("Нажми ещё раз, чтобы сбросить всё до нуля");return false}_rc=0;return true;
+}
+
+/* ---- апгрейдер ---- */
+const CIRC=2*Math.PI*100;
+const upChance=(sum,tp)=>sum>0&&tp>0?Math.min(95,Math.max(.5,sum/tp*95)):0;
+function upSum(){let s=0;st.inv.forEach(i=>{if(UP.sel.has(i.uid))s+=i.p});return s}
+function renderUp(app){
+  [...UP.sel].forEach(u=>{if(!st.inv.some(i=>i.uid===u))UP.sel.delete(u)});
+  const sum=upSum(),R=RANGES[UP.range];
+  const q=UP.q.toLowerCase();
+  let targets=ALL.map(i=>({...i,p:priceOf(i,2,false),w:2}));
+  if(sum>0)targets=targets.filter(i=>i.p>=sum*R[1]&&i.p<=sum*R[2]);
+  targets=targets.filter(i=>!q||i.n.toLowerCase().includes(q)).sort((a,b)=>a.p-b.p).slice(0,60);
+  if(UP.target&&sum>0&&UP.target.p<sum*1.0001&&!targets.some(t=>t.n===UP.target.n))UP.target=null;
+  const ch=UP.target?upChance(sum,UP.target.p):0;
+  const g=ch/100*CIRC;
+  app.innerHTML=`<h2>Апгрейд скинов</h2>
+  <div class="up">
+   <div class="pn"><h3>Твои скины <span>${UP.sel.size?fmt(sum):"выбери"}</span></h3>
+    ${st.inv.length?`<div class="scroll">${[...st.inv].reverse().map(i=>itCard(i,"",`click ${UP.sel.has(i.uid)?"pick":""}" data-u="${i.uid}`)).join("")}</div>`:`<div class="empty">Инвентарь пуст. Открой кейс, чтобы было что апгрейдить.</div>`}</div>
+   <div class="pn wheel">
+    <svg viewBox="0 0 260 260"><circle cx="130" cy="130" r="100" fill="none" stroke="#262d42" stroke-width="22"/>
+     <circle cx="130" cy="130" r="100" fill="none" stroke="#3ddc84" stroke-width="22" stroke-dasharray="${g} ${CIRC}" transform="rotate(-90 130 130)"/>
+     <g id="ptr" style="transform-origin:130px 130px"><polygon points="130,28 119,2 141,2" fill="#ffb02b"/><line x1="130" y1="28" x2="130" y2="44" stroke="#ffb02b" stroke-width="3"/></g>
+     <text x="130" y="128" text-anchor="middle" font-family="Rubik,sans-serif" font-weight="700" font-size="34" fill="#e8ecf6">${UP.target&&sum?ch.toFixed(ch<10?2:1)+"%":"—"}</text>
+     <text x="130" y="152" text-anchor="middle" font-family="Rubik,sans-serif" font-size="13" fill="#8b94ad">шанс успеха</text></svg>
+    <div style="margin:6px 0 12px;color:var(--mute);font-size:13px;line-height:1.5">${UP.target&&sum?`Ставка ${fmt(sum)} → ${esc(UP.target.n)} ${fmt(UP.target.p)}<br>Множитель ×${(UP.target.p/sum).toFixed(2)}`:"Выбери свои скины слева и цель справа"}</div>
+    <button class="btn" id="go" style="width:100%" ${UP.target&&sum&&!busy?"":"disabled"}>Апгрейд</button></div>
+   <div class="pn"><h3>Цель <span>${UP.target?fmt(UP.target.p):""}</span></h3>
+    <div class="chips">${RANGES.map((r,k)=>`<button class="chip ${k===UP.range?"on":""}" data-r="${k}">${r[0]}</button>`).join("")}</div>
+    <input id="uq" placeholder="Поиск цели…" value="${esc(UP.q)}" style="width:100%;margin-bottom:10px">
+    ${sum>0?(targets.length?`<div class="scroll">${targets.map(i=>itCard(i,"",`click ${UP.target&&UP.target.n===i.n?"pick":""}" data-t="${esc(i.n)}`)).join("")}</div>`:`<div class="empty">Нет целей в этом диапазоне</div>`):`<div class="empty">Сначала выбери свои скины</div>`}</div>
+  </div>
+  <p class="note">Шанс = стоимость ставки ÷ стоимость цели × 95%, максимум 95%. Цена цели — для износа Field-Tested. При проигрыше ставка сгорает, при победе цель попадает в инвентарь.</p>`;
+  $$("[data-u]").forEach(el=>el.onclick=()=>{if(busy)return;const u=+el.dataset.u;UP.sel.has(u)?UP.sel.delete(u):UP.sel.add(u);renderUp($("#app"))});
+  $$("[data-t]").forEach(el=>el.onclick=()=>{if(busy)return;UP.target=targets.find(t=>t.n===el.dataset.t);renderUp($("#app"))});
+  $$("[data-r]").forEach(el=>el.onclick=()=>{if(busy)return;UP.range=+el.dataset.r;renderUp($("#app"))});
+  const uq=$("#uq");if(uq)uq.oninput=e=>{UP.q=e.target.value;const pos=e.target.selectionStart;renderUp($("#app"));const n=$("#uq");n.focus();n.setSelectionRange(pos,pos)};
+  const go=$("#go");if(go)go.onclick=doUpgrade;
+}
+function doUpgrade(){
+  if(busy)return;const sum=upSum();const t=UP.target;if(!t||!sum)return;
+  const ch=upChance(sum,t.p);
+  const win=st.admin.upWin||Math.random()*100<ch;
+  const arc=ch*3.6;
+  const ang=win?arc*(.06+Math.random()*.88):arc+(360-arc)*(.06+Math.random()*.88);
+  // применяем результат сразу, чтобы перезагрузка страницы не давала обойти проигрыш
+  const lost=st.inv.filter(i=>UP.sel.has(i.uid));
+  st.inv=st.inv.filter(i=>!UP.sel.has(i.uid));
+  let got=null;
+  if(win){got={uid:st.uid++,n:t.n,r:t.r,case:t.case,w:2,f:.25,st:false,p:t.p};st.inv.push(got)}
+  st.ups++;UP.sel.clear();if(win)UP.target=null;save();head();
+  busy=true;$("#go").disabled=true;
+  const ptr=$("#ptr");ptr.style.transition="transform 5.5s cubic-bezier(.12,.7,.1,1)";
+  ptr.style.transform=`rotate(${360*6+ang}deg)`;
+  setTimeout(()=>{
+    busy=false;
+    $("#modalBox").innerHTML=win
+     ?`<h3 style="color:var(--green)">Апгрейд успешен!</h3><div class="won">${itCard(got)}</div><div class="row"><button class="btn" id="okU">Отлично</button></div>`
+     :`<h3 style="color:var(--red)">Не повезло</h3><p style="color:var(--mute);margin-bottom:10px">Ставка ${fmt(sum)} сгорела (шанс был ${ch.toFixed(1)}%).</p><div class="won">${lost.map(i=>itCard(i)).join("")}</div><div class="row"><button class="btn" id="okU">Понятно</button></div>`;
+    $("#modal").classList.add("on");
+    $("#okU").onclick=()=>{$("#modal").classList.remove("on");render()};
+  },5800);
+}
+
+function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("on");clearTimeout(toast._t);toast._t=setTimeout(()=>e.classList.remove("on"),2600)}
+
+/* ============ АДМИН-ПАНЕЛЬ (скрытая) ============ */
+function openGate(){
+  if(adminOK)return openAdmin();
+  $("#modalBox").innerHTML=`<div class="adm"><h3>Служебный доступ</h3><div class="hint">Введи код</div>
+   <input type="password" id="code" maxlength="8" inputmode="numeric" autocomplete="off"> <button class="btn sm" id="codeOk">Войти</button></div>`;
+  $("#modal").classList.add("on");
+  const go=()=>{if($("#code").value==="9999"){adminOK=true;openAdmin()}else{toast("Неверный код");$("#code").value=""}};
+  $("#codeOk").onclick=go;$("#code").onkeydown=e=>{if(e.key==="Enter")go()};
+  setTimeout(()=>$("#code").focus(),30);
+}
+function openAdmin(){
+  const a=st.admin;
+  $("#modalBox").innerHTML=`<div class="adm"><h3>Админ-панель</h3>
+   <label><input type="checkbox" id="aUp" ${a.upWin?"checked":""}> 100% заход апгрейда</label>
+   <div class="hint">Каждый апгрейд проходит успешно, независимо от показанного шанса.</div>
+   <div class="grp"><label>Окуп с кейса, %</label>
+   <div class="hint">Минимальная стоимость дропа в процентах от цены кейса. 0 — выключено, 100 — кейс всегда окупается, 300 — всегда выпадает скин в 3 раза дороже кейса.</div>
+   <input type="number" id="aPb" min="0" max="1000" step="10" value="${a.payback}"> <button class="btn sm" id="aPbSet">Применить</button>
+   <button class="btn ghost sm" data-pb="0">Выкл</button><button class="btn ghost sm" data-pb="100">100%</button><button class="btn ghost sm" data-pb="300">300%</button></div>
+   <div class="grp"><label>Выдать деньги</label>
+   <input type="number" id="aMoney" min="0" step="100" placeholder="Сумма"> <button class="btn green sm" id="aGive">Выдать</button>
+   <button class="btn ghost sm" data-m="1000">+$1 000</button><button class="btn ghost sm" data-m="10000">+$10 000</button><button class="btn ghost sm" data-m="100000">+$100 000</button></div>
+   <div class="row" style="margin-top:16px"><button class="btn ghost sm" id="aClose">Закрыть</button></div></div>`;
+  $("#modal").classList.add("on");
+  $("#aUp").onchange=e=>{st.admin.upWin=e.target.checked;save();toast(e.target.checked?"Апгрейд: 100% успех":"Апгрейд: обычные шансы")};
+  const setPb=v=>{v=Math.max(0,Math.min(1000,+v||0));st.admin.payback=v;$("#aPb").value=v;save();toast(v?`Окуп: минимум ${v}% от цены кейса`:"Окуп выключен")};
+  $("#aPbSet").onclick=()=>setPb($("#aPb").value);
+  $$("[data-pb]").forEach(b=>b.onclick=()=>setPb(b.dataset.pb));
+  const give=v=>{v=+v;if(!(v>0))return toast("Введи сумму");st.bal+=v;save();head();toast("Выдано "+fmt(v))};
+  $("#aGive").onclick=()=>{give($("#aMoney").value);$("#aMoney").value=""};
+  $$("[data-m]").forEach(b=>b.onclick=()=>give(b.dataset.m));
+  $("#aClose").onclick=closeModal;
+}
+function closeModal(){$("#modal").classList.remove("on");if(curCase)fillIdle();render()}
+let _lc=0,_lt;
+$("#logo").onclick=()=>{_lc++;clearTimeout(_lt);_lt=setTimeout(()=>_lc=0,1500);if(_lc>=5){_lc=0;openGate()}};
+document.addEventListener("keydown",e=>{if(e.ctrlKey&&e.altKey&&e.code==="KeyA")openGate()});
+
+/* ============ ПОПОЛНЕНИЕ (виртуальное) ============ */
+const PROMOS={STOLBNYAK:15,SHLYXA:10},DEP_LIMIT=100;
+const localDay=()=>{const d=new Date();return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate()};
+function depLeft(){const t=localDay();if(!st.dep||st.dep.d!==t)st.dep={d:t,s:0};return Math.max(0,Math.round((DEP_LIMIT-st.dep.s)*100)/100)}
+function openDeposit(){
+  if(busy)return;
+  let promo=null;const left=depLeft();
+  $("#modalBox").innerHTML=`<div class="adm"><h3>Пополнение баланса</h3>
+   <div class="hint">Симуляция: реальные деньги не списываются. Лимит — $${DEP_LIMIT} в день. Осталось сегодня: <b style="color:var(--accent2)">${fmt(left)}</b></div>
+   <label>Сумма, $</label>
+   <div class="chips">${[5,10,25,50,100].map(v=>`<button class="chip" data-a="${v}">$${v}</button>`).join("")}</div>
+   <input type="number" id="dAmt" min="1" max="${left}" step="1" placeholder="Например, 20" style="width:100%">
+   <label>Промокод</label>
+   <div style="display:flex;gap:8px"><input id="dPromo" placeholder="Введи промокод" autocomplete="off" style="flex:1;min-width:0;text-transform:uppercase"><button class="btn ghost sm" id="dApply">Применить</button></div>
+   <div class="hint" id="dInfo" style="margin-top:10px;min-height:20px"></div>
+   <div class="row" style="margin-top:8px"><button class="btn ghost sm" id="dClose">Отмена</button><button class="btn green sm" id="dPay">Пополнить</button></div></div>`;
+  $("#modal").classList.add("on");
+  const calc=()=>{const a=Math.floor((+$("#dAmt").value||0)*100)/100,pct=promo?PROMOS[promo]:0;return{a,pct,got:Math.round(a*(1+pct/100)*100)/100}};
+  const upd=()=>{const{a,pct,got}=calc();$("#dInfo").innerHTML=a>0?`К зачислению: <b style="color:var(--green)">${fmt(got)}</b>${pct?` (промокод ${promo}: +${pct}%)`:""}`:(promo?`Промокод ${promo} активен: +${pct}% к пополнению`:"")};
+  $$(".chip[data-a]").forEach(b=>b.onclick=()=>{$("#dAmt").value=Math.min(+b.dataset.a,left);upd()});
+  $("#dAmt").oninput=upd;
+  $("#dApply").onclick=()=>{const c=$("#dPromo").value.trim().toUpperCase();if(!c){promo=null;upd();return toast("Введи промокод")}
+    if(PROMOS[c]){promo=c;toast(`Промокод ${c}: +${PROMOS[c]}% к пополнению`)}else{promo=null;toast("Такого промокода нет")}upd()};
+  $("#dClose").onclick=closeModal;
+  $("#dPay").onclick=()=>{const{a,pct,got}=calc(),l=depLeft();
+    if(l<=0)return toast("Дневной лимит пополнения исчерпан");
+    if(a<1)return toast("Минимальная сумма — $1");
+    if(a>l)return toast(`Лимит на сегодня: осталось ${fmt(l)}`);
+    st.dep.s=Math.round((st.dep.s+a)*100)/100;st.bal+=got;save();closeModal();toast(`Баланс пополнен на ${fmt(got)}`+(pct?` (+${pct}%)`:""))};
+}
+
+/* ============ ОНЛАЙН И LIVE-ДРОПЫ (симуляция) ============ */
+const NICKS=["Stolb","Shlyxa","Dima_X","Kirill77","Aigul","Nurs","Ernar","ProGamer","Sanya","Madi","Temir","Alina","Vlad","Bekzat","Dana","Artem","Zhanibek","LuckyBoy","Gena","Kostya","Roma","AWPer","Sveta","Dastan"];
+const FEED=[];let online=0;
+const onlineBase=()=>{const h=new Date().getHours()+new Date().getMinutes()/60;return Math.round(1100+500*(.5+.5*Math.sin((h-14)/24*2*Math.PI)))};
+online=onlineBase()+Math.round((Math.random()-.5)*120);
+function pushFeed(nick,d,c,fresh){
+  FEED.unshift({nick,n:d.n,r:d.r,p:d.p,c:c.name,svg:skinSVG(d.n),fresh:!!fresh});
+  if(FEED.length>14)FEED.pop();
+  drawFeed(true);
+}
+function drawFeed(anim){
+  const f=$("#feed");if(!f)return;
+  f.innerHTML=FEED.map((d,i)=>`<div class="fd ${d.r} ${anim&&i===0&&d.fresh?"new":""}"><div class="fi">${d.svg}</div><b>${esc(d.nick)} · ${esc(d.c)}</b><span>${esc(d.n)}</span><em>${fmt(d.p)}</em></div>`).join("");
+}
+function botDrop(){
+  const c=CASES[Math.floor(Math.random()*CASES.length)],d=fakeRoll(c);
+  d.fresh=true;pushFeed(NICKS[Math.floor(Math.random()*NICKS.length)]+(Math.random()<.4?Math.floor(Math.random()*99):""),d,c,true);
+}
+for(let i=0;i<14;i++)botDrop();FEED.forEach(d=>d.fresh=false);
+(function loop(){setTimeout(()=>{if(!document.hidden)botDrop();loop()},1800+Math.random()*2800)})();
+setInterval(()=>{
+  const b=onlineBase();online+=Math.round((Math.random()-.5)*14)+Math.sign(b-online)*2;
+  online=Math.max(b-150,Math.min(b+150,online));
+  const e=$("#onl");if(e)e.textContent=online.toLocaleString("ru-RU");
+},3000);
+
+/* ============ СОБЫТИЯ ============ */
+$$("#nav button").forEach(b=>b.onclick=()=>{if(!busy)setView(b.dataset.v)});
+$("#depBtn").onclick=openDeposit;
+$("#modal").onclick=e=>{if(e.target.id==="modal"&&!busy)closeModal()};
+render();
+</script>
+</body>
+</html>
